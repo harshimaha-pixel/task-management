@@ -10,7 +10,7 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor #test
+// Request interceptor 
 apiClient.interceptors.request.use(
   (config) => {
     // Add auth token if available
