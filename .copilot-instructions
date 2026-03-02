@@ -1,0 +1,321 @@
+# Copilot Instructions for Task Management Application
+
+## Project Overview
+This is a Task Management application built with React and TypeScript. **React and TypeScript are MANDATORY** for this project. It provides a modern, interactive UI for managing tasks with features like prioritization, categorization, status tracking, and real-time updates.
+
+## Technology Requirements
+
+### MANDATORY: React and TypeScript
+- **React** (v18+): All UI must be built with React components
+- **TypeScript**: REQUIRED for all source files (.ts, .tsx)
+- **Vite**: Build tool for fast development and optimized bundles
+- **ESNext**: Modern JavaScript module system
+
+## Code Style and Standards
+
+### TypeScript + React
+- Use strict mode: `"strict": true` in tsconfig.json
+- **Every component must be a TypeScript file (.tsx)**
+- **Every React component must have explicit return type annotation**
+- Define explicit types for all variables, parameters, and return values
+- Avoid `any` type; use proper typing instead (use `unknown` if truly dynamic)
+- Use interfaces for complex object structures and props
+- Use enums for constants with specific values
+- Use `React.FC<Props>` pattern or function component with explicit return type
+
+### Naming Conventions
+- React Components: PascalCase (e.g., `TaskList`, `UserProfile`)
+- Component Files: PascalCase (e.g., `TaskCard.tsx`, `UserForm.tsx`)
+- Hooks: camelCase starting with 'use' (e.g., `useTask`, `useFetchTasks`)
+- Functions/Methods: camelCase (e.g., `getTasks`, `handleSubmit`)
+- Constants: UPPER_SNAKE_CASE (e.g., `MAX_TASKS`, `API_TIMEOUT`)
+- Variables: camelCase (e.g., `taskList`, `userName`)
+- Type/Interface files: kebab-case (e.g., `task.types.ts`, `user.interface.ts`)
+- Utility files: kebab-case (e.g., `date-utils.ts`, `api-helpers.ts`)
+- Directories: kebab-case (e.g., `components`, `hooks`, `utils`, `types`)
+
+### File Organization
+```
+src/
+├── components/           # Reusable React components
+│   ├── TaskList.tsx
+│   ├── TaskCard.tsx
+│   ├── TaskForm.tsx
+│   └── common/          # Shared UI components
+├── hooks/                # Custom React hooks
+│   ├── useTasks.ts
+│   └── useFetch.ts
+├── pages/                # Page components (for routing)
+│   ├── HomePage.tsx
+│   ├── TasksPage.tsx
+│   └── SettingsPage.tsx
+├── services/             # API and business logic
+│   ├── api.ts           # HTTP requests
+│   └── taskService.ts   # Business logic
+├── types/                # TypeScript types and interfaces
+│   ├── task.types.ts
+│   └── user.types.ts
+├── utils/                # Helper functions
+│   ├── date-utils.ts
+│   ├── validation.ts
+│   └── api-helpers.ts
+├── App.tsx              # Root component
+└── main.tsx             # Vite entry point
+```
+
+## React Component Architecture
+
+### Component Types
+1. **Page Components**: Full page layouts (TasksPage, HomePage)
+2. **Feature Components**: Business logic components (TaskList, TaskForm)
+3. **Presentational Components**: Reusable UI components (Button, Card, Modal)
+4. **Container Components**: State management and data fetching
+5. **Hook Modules**: Shared stateful logic (useTasks, useFetch)
+
+### Component Structure
+- Each component is a separate file with .tsx extension
+- Props should be defined using TypeScript interfaces
+- Components should have explicit return type annotations
+- Prefer functional components with hooks over class components
+- Export components at the end of the file with a named export
+
+### State Management
+- Use React hooks (useState, useReducer) for local state
+- Create custom hooks for shared logic
+- Consider lifting state up or using Context API for shared state
+- For complex global state, consider Redux or Zustand (must use TypeScript)
+
+### React Best Practices
+
+#### Component Development
+- Every component file MUST use TypeScript (.tsx)
+- Keep components small and focused (single responsibility)
+- Use proper TypeScript typing for props and state
+- Avoid prop drilling; use Context API or state management
+- Memoize expensive computations with useMemo
+- Use useCallback for stable function references
+- Always provide keys in lists
+
+#### Hooks Usage
+- Create custom hooks for reusable logic
+- Name all custom hooks with 'use' prefix
+- Use hooks at top level only (not inside conditions/loops)
+- Handle dependencies array correctly in useEffect
+- Clean up subscriptions in useEffect cleanup function
+
+#### Error Handling
+- Use try-catch blocks in async operations
+- Display user-friendly error messages
+- Log errors to console in development, to service in production
+- Handle loading and error states in UI
+- Show fallback UI for failed states
+
+#### Performance
+- Code split with React.lazy() for large features
+- Memoize components with React.memo() when needed
+- Optimize re-renders with proper dependency arrays
+- Use Vite's dynamic imports for lazy loading
+- Avoid creating inline objects/functions in JSX
+
+## API Integration
+
+### API Service Pattern
+Create a service layer for API calls using TypeScript:
+
+```typescript
+// services/api.ts
+import axios, { AxiosInstance } from 'axios';
+
+const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+});
+
+export default apiClient;
+```
+
+### API Response Typing
+```typescript
+// types/api.types.ts
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in-progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+}
+```
+
+### Custom Hooks for Data Fetching
+```typescript
+// hooks/useFetchTasks.ts
+import { useState, useEffect } from 'react';
+import apiClient from '../services/api';
+import { Task, ApiResponse } from '../types/api.types';
+
+export const useFetchTasks = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTasks = async (): Promise<void> => {
+      try {
+        const response = await apiClient.get<ApiResponse<Task[]>>('/tasks');
+        setTasks(response.data.data || []);
+      } catch (err) {
+        setError('Failed to fetch tasks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  return { tasks, loading, error };
+};
+```
+
+## Development Workflow
+
+1. Create feature branch: `git checkout -b feature/feature-name`
+2. Make changes following the code standards (TypeScript and React mandatory)
+3. Write tests for new components and hooks
+4. Ensure all tests pass: `npm test`
+5. Run dev server locally: `npm run dev`
+6. Build the project: `npm run build`
+7. Commit with meaningful messages
+8. Push and create pull request
+
+## Common React Tasks
+
+### Creating a New Component
+1. Create `.tsx` file in `src/components/`
+2. Define TypeScript interface for props
+3. Create functional component with explicit return type
+4. Export as named export
+5. Add component test in `tests/`
+
+Example:
+```typescript
+// src/components/TaskCard.tsx
+import React from 'react';
+import { Task } from '../types/task.types';
+
+interface TaskCardProps {
+  task: Task;
+  onEdit: (task: Task) => void;
+  onDelete: (id: string) => void;
+}
+
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }): JSX.Element => {
+  return (
+    <div className="task-card">
+      <h3>{task.title}</h3>
+      <p>{task.description}</p>
+      <button onClick={() => onEdit(task)}>Edit</button>
+      <button onClick={() => onDelete(task.id)}>Delete</button>
+    </div>
+  );
+};
+```
+
+### Adding a Custom Hook
+1. Create `.ts` file in `src/hooks/`
+2. Name it `use*` (e.g., `useTasks`, `useFetch`)
+3. Define return type explicitly
+4. Write comprehensive tests
+
+### Adding a New Page
+1. Create `.tsx` file in `src/pages/`
+2. Create functional component with layout
+3. Use appropriate hooks for data fetching
+4. Handle loading, error, and success states
+5. Export as default export
+
+## Dependencies
+
+### Production
+- **react** (v18+): UI library (MANDATORY)
+- **react-dom**: React DOM rendering (MANDATORY)
+- **axios**: HTTP client for API calls
+- **vite**: Build tool and dev server
+
+### Development
+- **typescript**: Language (MANDATORY)
+- **@vitejs/plugin-react**: Vite React support
+- **@types/react**: React TypeScript definitions (MANDATORY)
+- **@types/react-dom**: React DOM TypeScript definitions (MANDATORY)
+- **jest**: Testing framework
+- **@testing-library/react**: React component testing
+- **eslint**: Linting
+- **eslint-plugin-react**: React linting rules
+- **prettier**: Code formatting
+
+## Environment Variables
+
+Use Vite's env system with `import.meta.env`:
+
+```
+# .env.development
+VITE_API_URL=http://localhost:3000/api
+VITE_APP_NAME=Task Management
+VITE_DEBUG=true
+
+# .env.production
+VITE_API_URL=https://api.taskmanagement.com
+VITE_APP_NAME=Task Management
+VITE_DEBUG=false
+```
+
+Variables must be prefixed with `VITE_` to be accessible in the app via `import.meta.env.VITE_*`
+
+## Performance Considerations
+
+- Use React.memo() for expensive components
+- Implement code splitting with React.lazy()
+- Use useMemo and useCallback appropriately
+- Optimize images and assets
+- Bundle analysis with Vite plugins
+- Lazy load routes with React Router
+- Implement virtual scrolling for long lists
+- Use Vite's built-in optimizations
+- Profile with React DevTools
+
+## Debugging
+- Use React DevTools browser extension
+- Use `console.log` for debugging during development
+- Use debugger statements in browser
+- Use VS Code debugger with Vite launch configuration
+- Check Vite dev server output: `npm run dev`
+- Inspect component props, hooks, and state with DevTools
+- Use ESLint to catch common errors
+
+## Version Control
+
+- Keep commits atomic and focused
+- Write clear, descriptive commit messages
+- Use feature branches for development
+- Avoid committing sensitive data
+- Review diffs before committing
+
+## Resources
+
+- React Documentation: https://react.dev/
+- TypeScript Handbook: https://www.typescriptlang.org/docs/
+- Vite Documentation: https://vitejs.dev/
+- React Testing Library: https://testing-library.com/react
+- React DevTools: https://react-devtools-tutorial.vercel.app/
+- ESLint React Plugin: https://github.com/jsx-eslint/eslint-plugin-react
+
+---
+
+For questions or improvements to these instructions, please create an issue or discussion.
