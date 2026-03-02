@@ -16,7 +16,7 @@
   --transition: all 0.3s ease;
 }
 
-/* Dark Mode */
+/* Dark Mode enabled*/
 @media (prefers-color-scheme: dark) {
   :root {
     --light: #2d2d30;
